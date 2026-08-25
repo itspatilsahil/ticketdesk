@@ -1,0 +1,13 @@
+# Active when SPRING_PROFILES_ACTIVE is unset. Used for M0-M2 (before RDS
+# exists) and for local development. In-memory H2, schema auto-generated
+# from the JPA entities - nothing to install, nothing to configure.
+spring:
+  datasource:
+    url: jdbc:h2:mem:ticketdesk;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false

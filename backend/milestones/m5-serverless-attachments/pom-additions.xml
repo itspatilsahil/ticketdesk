@@ -1,0 +1,27 @@
+<!--
+  Milestone 5: add the AWS SDK v2 S3 presigner. Two edits to backend/pom.xml:
+
+  1. Add this <properties> entry (inside the existing <properties> block):
+
+    <awssdk.version>2.27.21</awssdk.version>
+
+  2. Add a <dependencyManagement> block right after </properties>, and add
+     the <dependency> below into the existing <dependencies> block:
+-->
+<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>bom</artifactId>
+      <version>${awssdk.version}</version>
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+
+<!-- inside <dependencies> -->
+<dependency>
+  <groupId>software.amazon.awssdk</groupId>
+  <artifactId>s3</artifactId>
+</dependency>

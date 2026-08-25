@@ -1,0 +1,22 @@
+# Active when SPRING_PROFILES_ACTIVE=prod (set by the ECS task definition
+# from Milestone 3 onward). Every value here comes from the environment -
+# nothing is hardcoded, nothing is a secret in this file.
+#
+# DB_PASSWORD is injected by ECS directly from Secrets Manager (via the
+# task definition's "secrets" block, not "environment") so it never
+# appears in a rendered config, a log line, or this repository.
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  sql:
+    init:
+      mode: always
+app:
+  attachments:
+    bucket: ${ATTACHMENTS_BUCKET}

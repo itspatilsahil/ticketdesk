@@ -1,0 +1,11 @@
+# Milestone 5: add this one line under the existing `app:` root (or add
+# an `app:` root if there isn't one yet) in
+# backend/src/main/resources/application-prod.yml.
+#
+# Bound by S3Config's @Value("${app.attachments.bucket:}") - read from the
+# ATTACHMENTS_BUCKET plain (non-secret) environment variable the M5
+# ecs.tf revision adds to the task definition.
+
+app:
+  attachments:
+    bucket: ${ATTACHMENTS_BUCKET}
