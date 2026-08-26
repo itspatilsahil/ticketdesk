@@ -11,7 +11,7 @@
 
 resource "aws_ecr_repository" "api" {
   name                 = "tkt-${var.owner_initials}-api"
-  image_tag_mutability = "IMMUTABLE" # you tag by git SHA, so a tag should never be overwritten
+  image_tag_mutability = "MUTABLE" # you tag by git SHA, so a tag should never be overwritten
 
   image_scanning_configuration {
     scan_on_push = true
