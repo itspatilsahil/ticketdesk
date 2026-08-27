@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TicketDesk</title>
+<style>
+  :root { color-scheme: light; }
+  body { font-family: -apple-system, Segoe UI, Roboto, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; }
+  h1 { font-size: 1.4rem; }
+  form { display: grid; gap: .5rem; grid-template-columns: 1fr 1fr; margin-bottom: 1.5rem; }
+  form input, form select, form textarea { padding: .4rem; font-size: .9rem; }
+  form textarea { grid-column: 1 / -1; }
+  form button { grid-column: 1 / -1; padding: .5rem; cursor: pointer; }
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th, td { text-align: left; padding: .4rem; border-bottom: 1px solid #ddd; }
+  select.status { font-size: .8rem; }
+  #dashboard { display: flex; gap: 1rem; margin-bottom: 1rem; font-size: .85rem; flex-wrap: wrap; }
+  #dashboard span { background: #f0f0f0; padding: .3rem .6rem; border-radius: 4px; }
+  #error { color: #b00020; font-size: .85rem; }
+</style>
+</head>
+<body>
+  <h1>TicketDesk</h1>
+  <div id="dashboard"></div>
+  <div id="error"></div>
+
+  <form id="create-form">
+    <input name="title" placeholder="Title" required>
+    <select name="category" required>
+      <option value="HARDWARE">Hardware</option>
+      <option value="SOFTWARE">Software</option>
+      <option value="NETWORK">Network</option>
+      <option value="ACCESS">Access</option>
+      <option value="OTHER">Other</option>
+    </select>
+    <select name="priority" required>
+      <option value="LOW">Low</option>
+      <option value="MEDIUM" selected>Medium</option>
+      <option value="HIGH">High</option>
+      <option value="URGENT">Urgent</option>
+    </select>
+    <textarea name="description" placeholder="Description" rows="2"></textarea>
+    <button type="submit">Create ticket</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Title</th><th>Category</th><th>Priority</th><th>Status</th><th>Created</th></tr>
+    </thead>
+    <tbody id="ticket-rows"></tbody>
+  </table>
+
+  <script>
+    // Same-origin call - CloudFront routes /api/* to the load balancer,
+    // so this file never needs to know the ALB's address.
+    const API = "/api/tickets";
+
+    async function loadDashboard() {
+      const res = await fetch(API + "/dashboard");
+      const data = await res.json();
+      const el = document.getElementById("dashboard");
+      el.innerHTML = "";
+      for (const [k, v] of Object.entries(data.byStatus)) {
+        el.innerHTML += `<span>${k}: ${v}</span>`;
+      }
+    }
+
+    async function loadTickets() {
+      try {
+        const res = await fetch(API);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const tickets = await res.json();
+        const rows = document.getElementById("ticket-rows");
+        rows.innerHTML = tickets.map(t => `
+          <tr>
+            <td>${t.id}</td>
+            <td>${escapeHtml(t.title)}</td>
+            <td>${t.category}</td>
+            <td>${t.priority}</td>
+            <td>
+              <select class="status" data-id="${t.id}">
+                ${["OPEN","IN_PROGRESS","RESOLVED","CLOSED"].map(s =>
+                  `<option value="${s}" ${s === t.status ? "selected" : ""}>${s}</option>`).join("")}
+              </select>
+            </td>
+            <td>${new Date(t.createdAt).toLocaleString()}</td>
+          </tr>`).join("");
+        document.getElementById("error").textContent = "";
+      } catch (e) {
+        document.getElementById("error").textContent = "Could not load tickets: " + e.message;
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+    }
+
+    document.getElementById("create-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const body = Object.fromEntries(fd.entries());
+      await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      e.target.reset();
+      await Promise.all([loadTickets(), loadDashboard()]);
+    });
+
+    document.getElementById("ticket-rows").addEventListener("change", async (e) => {
+      if (!e.target.classList.contains("status")) return;
+      const id = e.target.dataset.id;
+      await fetch(`${API}/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: e.target.value })
+      });
+      await loadDashboard();
+    });
+
+    loadDashboard();
+    loadTickets();
+  </script>
+</body>
+</html>
