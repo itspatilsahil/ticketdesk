@@ -25,6 +25,11 @@ public class TicketController {
         this.commentRepository = commentRepository;
     }
 
+    @GetMapping("/")
+    public String home() {
+        return "redirect:/api/tickets";
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Ticket create(@RequestBody CreateTicketRequest req) {
