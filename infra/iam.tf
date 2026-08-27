@@ -10,7 +10,6 @@
 #   specific secret and one specific Parameter Store path (never "*" on
 #   "*" - checklist item 32 / pass-fail gate 2), and Milestone 5 attaches
 #   permission to generate presigned URLs for one specific S3 bucket.
-
 resource "aws_iam_role" "ecs_execution" {
   name = "tkt-${var.owner_initials}-ecs-execution-role"
   assume_role_policy = jsonencode({
@@ -22,12 +21,10 @@ resource "aws_iam_role" "ecs_execution" {
     }]
   })
 }
-
 resource "aws_iam_role_policy_attachment" "ecs_execution" {
   role       = aws_iam_role.ecs_execution.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
-
 resource "aws_iam_role" "ecs_task" {
   name = "tkt-${var.owner_initials}-ecs-task-role"
   assume_role_policy = jsonencode({

@@ -11,5 +11,5 @@ terraform {
   # Remote backend with locking (checklist item 7). Bucket/table names
   # come from infra/bootstrap - fill them into backend.hcl (see
   # backend.hcl.example) and run: terraform init -backend-config=backend.hcl
-  backend "s3" {}
+  # backend "s3" {}
 }
